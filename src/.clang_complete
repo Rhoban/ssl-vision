@@ -1,0 +1,5 @@
+-Ishared/util/
+-Ishared/gl
+-Ishared/net
+-Ishared/vartypes
+-I/usr/include/flycapture/

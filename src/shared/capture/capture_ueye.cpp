@@ -25,6 +25,24 @@ CaptureUeye::CaptureUeye(VarList * _settings, int default_camera_id, QObject * p
 
     v_exposure = new VarDouble("Exposure (ms)", 12);
     _settings->addChild(v_exposure);
+
+    v_fps = new VarDouble("FPS", 60);
+    _settings->addChild(v_fps);
+
+    v_master_gain = new VarInt("Master gain", 80);
+    _settings->addChild(v_master_gain);
+
+    v_red_gain = new VarInt("Red gain", 17);
+    _settings->addChild(v_red_gain);
+
+    v_green_gain = new VarInt("Green gain", 0);
+    _settings->addChild(v_green_gain);
+
+    v_blue_gain = new VarInt("Blue gain", 42);
+    _settings->addChild(v_blue_gain);
+
+    v_edge_enhancement = new VarInt("Edge enhancement", 9);
+    _settings->addChild(v_edge_enhancement);
 }
 
 CaptureUeye::~CaptureUeye()
@@ -53,7 +71,7 @@ RawImage CaptureUeye::getFrame()
     result.setWidth(capture_width);
     result.setHeight(capture_height);
     result.setData((unsigned char*)current_frame);
-    result.setColorFormat(COLOR_RGB8);
+    result.setColorFormat(COLOR_YUV422_UYVY);
 
     UEYEIMAGEINFO info;
     is_GetImageInfo(hCam, mem_id, &info, sizeof(UEYEIMAGEINFO));
@@ -121,10 +139,9 @@ bool CaptureUeye::startCapture()
     for (int k=0; k<8; k++) {
         char *mem;
         int memId;
-        is_AllocImageMem(hCam, capture_width, capture_height, 24, &mem, &memId);
+        is_AllocImageMem(hCam, capture_width, capture_height, 16, &mem, &memId);
         is_AddToSequence(hCam, mem, memId);
         buffers[memId] = mem;
-        bufferToId[mem] = memId;
     }
     last_mem_id = 1;
 
@@ -133,15 +150,15 @@ bool CaptureUeye::startCapture()
     is_Exposure(hCam, IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&exposure, sizeof(exposure));
 
     // White balance
-    is_SetHardwareGain(hCam, 80, 17, 0, 42);
+    is_SetHardwareGain(hCam, v_master_gain->getInt(), v_red_gain->getInt(), v_green_gain->getInt(), v_blue_gain->getInt());
 
     // Enabling anti-flicker
     double flicker = ANTIFLCK_MODE_SENS_50_FIXED;
     is_SetAutoParameter(hCam, IS_SET_ANTI_FLICKER_MODE, &flicker, NULL);
 
     // Setting framerate
-    is_SetColorMode(hCam, IS_CM_RGB8_PACKED);
-    double fps = 60, newFps = 60;
+    is_SetColorMode(hCam, IS_CM_UYVY_PACKED);
+    double fps = v_fps->getDouble(), newFps = v_fps->getDouble();
     is_SetFrameRate(hCam, fps, &newFps);
 
     // Event frame event enabled
@@ -151,7 +168,7 @@ bool CaptureUeye::startCapture()
     is_CaptureVideo(hCam, IS_WAIT);
 
     // Edge enhancement
-    UINT nEdgeEnhancement = 9;
+    UINT nEdgeEnhancement = v_edge_enhancement->getInt();
     printf("EdgeEnhancement: %d\n", is_EdgeEnhancement(hCam, IS_EDGE_ENHANCEMENT_CMD_SET, (void*)&nEdgeEnhancement, sizeof(nEdgeEnhancement)));
 
     is_capturing = true;
@@ -164,7 +181,12 @@ bool CaptureUeye::stopCapture()
     is_capturing = false;
 
     mutex.lock();
-    // is_FreeImageMem(hCam, current_frame, mem_id);
+    is_ClearSequence(hCam);
+
+    for (std::map<int, char*>::iterator it = buffers.begin();
+        it != buffers.end(); it++) {
+        is_FreeImageMem(hCam, it->second, it->first);
+    }
     is_ExitCamera(hCam);
     current_frame = NULL;
     mutex.unlock();
@@ -188,9 +210,8 @@ string CaptureUeye::getCaptureMethodName() const
 
 bool CaptureUeye::copyAndConvertFrame(const RawImage & src, RawImage & target)
 {
-    target.allocate(COLOR_RGB8, src.getWidth(), src.getHeight());
+    target.allocate(COLOR_YUV422_UYVY, src.getWidth(), src.getHeight());
     memcpy(target.getData(),src.getData(),src.getNumBytes());
 
     return true;
-
 }

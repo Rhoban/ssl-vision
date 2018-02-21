@@ -1,5 +1,6 @@
 #ifndef CAPTURE_UEYE_H
 #define CAPTURE_UEYE_H
+
 #include "captureinterface.h"
 #include "util.h"
 #include <QMutex>
@@ -29,9 +30,14 @@ protected:
     // Capture dimensions
     VarStringEnum * v_dimensions;
     VarDouble *v_exposure;
+    VarDouble *v_fps;
+    VarInt *v_master_gain;
+    VarInt *v_red_gain;
+    VarInt *v_blue_gain;
+    VarInt *v_green_gain;
+    VarInt *v_edge_enhancement;
 
     std::map<int, char*> buffers;
-    std::map<char*, int> bufferToId;
 
 public:
     CaptureUeye(VarList * _settings=0, int default_camera_id=0, QObject * parent=0);
