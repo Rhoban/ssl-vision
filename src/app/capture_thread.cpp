@@ -65,6 +65,12 @@ CaptureThread::CaptureThread(int cam_id)
   captureFlycap = new CaptureFlycap(flycap, camId);
 #endif
 
+#ifdef UEYE
+    captureModule->addItem("uEye");
+    settings->addChild( (VarType*) (ueye = new VarList("uEye")));
+    captureUeye = new CaptureUeye(ueye, camId);
+#endif
+
 #ifdef MVIMPACT
   captureModule->addItem("BlueFox2");
   settings->addChild( (VarType*) (bluefox2 = new VarList("BlueFox2")));
@@ -100,6 +106,10 @@ CaptureThread::~CaptureThread()
 
 #ifdef FLYCAP
   delete captureFlycap;
+#endif
+
+#ifdef UEYE
+    delete captureFlycap;
 #endif
 
 #ifdef MVIMPACT
@@ -138,6 +148,10 @@ void CaptureThread::selectCaptureMethod() {
 #ifdef FLYCAP
   } else if(captureModule->getString() == "Flycapture") {
     new_capture = captureFlycap;
+#endif
+#ifdef UEYE
+  } else if(captureModule->getString() == "uEye") {
+    new_capture = captureUeye;
 #endif
   }
 

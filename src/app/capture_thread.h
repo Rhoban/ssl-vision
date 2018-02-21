@@ -41,6 +41,10 @@
 #include "capture_flycap.h"
 #endif
 
+#ifdef UEYE
+#include "capture_ueye.h"
+#endif
+
 
 /*!
   \class   CaptureThread
@@ -60,6 +64,7 @@ protected:
   CaptureInterface * captureV4L;
   CaptureInterface * captureBlueFox2;
   CaptureInterface * captureFlycap;
+  CaptureInterface * captureUeye;
   CaptureInterface * captureFiles;
   CaptureInterface * captureGenerator;
   AffinityManager * affinity;
@@ -71,6 +76,7 @@ protected:
   VarList * v4l;
   VarList * bluefox2;
   VarList * flycap;
+  VarList * ueye;
   VarList * generator;
   VarList * fromfile;
   VarList * control;

@@ -97,6 +97,16 @@ else()
   message(STATUS "Flycapture NOT found => Flycap support disabled")
 endif()
 
+if (EXISTS "/usr/include/ueye.h")
+	add_definitions(-D UEYE)
+	set (SHARED_SRCS ${SHARED_SRCS} ${shared_dir}/capture/capture_ueye.cpp)
+	set (SHARED_HEADERS ${SHARED_HEADERS} ${shared_dir}/capture/capture_ueye.h)
+	set (UEYE_LIBS ueye_api)
+	message(STATUS "uEye found => uEye support enabled")
+else()
+	message(STATUS "uEye NOT found => uEye support disabled")
+endif()
+
 find_package( OpenCV 2 QUIET )
 if(OpenCV_FOUND)
   include_directories(${OpenCV_INCLUDE_DIRS})
@@ -251,6 +261,7 @@ set (libs ${QT_LIBRARIES}
 	${mvIMPACT_LIBRARIES}
 	${OpenCV_LIBS}
 	${FLYCAP_LIBS}
+	${UEYE_LIBS}
 )
 target_link_libraries(sslvision ${libs})
 if(USE_QT5)
