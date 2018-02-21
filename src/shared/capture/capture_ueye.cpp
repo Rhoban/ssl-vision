@@ -5,11 +5,14 @@
 CaptureUeye::CaptureUeye(VarList * _settings, int default_camera_id, QObject * parent)
 : QObject(parent), CaptureInterface(_settings)
 {
-    cam_id = default_camera_id + 1;
     is_capturing = false;
     capture_width = 640;
     capture_height = 480;
     current_frame = NULL;
+
+    // Camera ID
+    v_cam_id = new VarInt("Cam ID", default_camera_id+1);
+    _settings->addChild(v_cam_id);
 
     // Capture dimensions
     v_dimensions = new VarStringEnum("Frame dimension", "1280x1024");
@@ -23,12 +26,15 @@ CaptureUeye::CaptureUeye(VarList * _settings, int default_camera_id, QObject * p
     v_dimensions->addItem("320x240");
     _settings->addChild(v_dimensions);
 
+    // Exposure time
     v_exposure = new VarDouble("Exposure (ms)", 12);
     _settings->addChild(v_exposure);
 
+    // Frames per second
     v_fps = new VarDouble("FPS", 60);
     _settings->addChild(v_fps);
 
+    // Gains
     v_master_gain = new VarInt("Master gain", 80);
     _settings->addChild(v_master_gain);
 
@@ -41,6 +47,7 @@ CaptureUeye::CaptureUeye(VarList * _settings, int default_camera_id, QObject * p
     v_blue_gain = new VarInt("Blue gain", 42);
     _settings->addChild(v_blue_gain);
 
+    // Edge enhancement value
     v_edge_enhancement = new VarInt("Edge enhancement", 9);
     _settings->addChild(v_edge_enhancement);
 }
@@ -93,7 +100,7 @@ void CaptureUeye::releaseFrame()
 bool CaptureUeye::startCapture()
 {
     mutex.lock();
-    hCam = cam_id;
+    hCam = v_cam_id->getInt();
     std::cout << "uEye: Starting capturing! index: " << hCam << std::endl;
 
     is_capturing = false;
@@ -104,7 +111,7 @@ bool CaptureUeye::startCapture()
 
     // Getting dimensions
     string dimension = v_dimensions->getSelection();
-    for (int k=0; k<dimension.length(); k++) {
+    for (size_t k=0; k<dimension.length(); k++) {
         if (dimension[k] == 'x') {
             capture_width = atoi(dimension.substr(0, k).c_str());
             capture_height = atoi(dimension.substr(k+1).c_str());

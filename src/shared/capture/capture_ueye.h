@@ -19,7 +19,6 @@ class CaptureUeye : public QObject, public CaptureInterface {
 protected:
     QMutex mutex;
 
-    int cam_id;
     int last_mem_id;
     int mem_id;
     unsigned int capture_width, capture_height;
@@ -36,6 +35,7 @@ protected:
     VarInt *v_blue_gain;
     VarInt *v_green_gain;
     VarInt *v_edge_enhancement;
+    VarInt *v_cam_id;
 
     std::map<int, char*> buffers;
 
