@@ -27,7 +27,10 @@ protected:
     HIDS hCam;
 
     // Capture dimensions
-    VarStringEnum * v_dimensions;
+    VarInt *v_width;
+    VarInt *v_height;
+    VarInt *v_x;
+    VarInt *v_y;
     VarDouble *v_exposure;
     VarDouble *v_fps;
     VarInt *v_master_gain;

@@ -15,16 +15,14 @@ CaptureUeye::CaptureUeye(VarList * _settings, int default_camera_id, QObject * p
     _settings->addChild(v_cam_id);
 
     // Capture dimensions
-    v_dimensions = new VarStringEnum("Frame dimension", "1280x1024");
-    v_dimensions->addItem("1280x1024");
-    v_dimensions->addItem("1280x960");
-    v_dimensions->addItem("1280x720");
-    v_dimensions->addItem("1024x1024");
-    v_dimensions->addItem("1024x768");
-    v_dimensions->addItem("800x600");
-    v_dimensions->addItem("640x480");
-    v_dimensions->addItem("320x240");
-    _settings->addChild(v_dimensions);
+    v_width = new VarInt("Width", 1280);
+    _settings->addChild(v_width);
+    v_height = new VarInt("Width", 1024);
+    _settings->addChild(v_height);
+    v_x = new VarInt("X offset", 0);
+    _settings->addChild(v_x);
+    v_y = new VarInt("Y offset", 0);
+    _settings->addChild(v_y);
 
     // Exposure time
     v_exposure = new VarDouble("Exposure (ms)", 12);
@@ -110,13 +108,8 @@ bool CaptureUeye::startCapture()
     }
 
     // Getting dimensions
-    string dimension = v_dimensions->getSelection();
-    for (size_t k=0; k<dimension.length(); k++) {
-        if (dimension[k] == 'x') {
-            capture_width = atoi(dimension.substr(0, k).c_str());
-            capture_height = atoi(dimension.substr(k+1).c_str());
-        }
-    }
+    capture_width = v_width->getInt();
+    capture_height = v_height->getInt();
 
     // Searching for format
     uint32_t entries;
@@ -130,15 +123,24 @@ bool CaptureUeye::startCapture()
     bool found = false;
     for (size_t k=0; k<entries; k++) {
         IMAGE_FORMAT_INFO *info = &formatList->FormatInfo[k];
+
         // printf("w: %d, h: %d\n", info->nWidth, info->nHeight);
-        if (info->nWidth == capture_width && info->nHeight == capture_height) {
+        if (info->nWidth == 1280 && info->nHeight == 1024) {
             is_ImageFormat(hCam, IMGFRMT_CMD_SET_FORMAT, &info->nFormatID, sizeof(info->nFormatID));
             found = true;
         }
     }
+
     if (!found) {
         std::cerr << "Unsupported resolution: " << capture_width << "x" << capture_height << std::endl;
     }
+
+    IS_RECT rectAOI;
+    rectAOI.s32X = v_x->getInt();
+    rectAOI.s32Y = v_y->getInt();
+    rectAOI.s32Width = capture_width;
+    rectAOI.s32Height = capture_height;
+    is_AOI(hCam, IS_AOI_IMAGE_SET_AOI, (void*)&rectAOI, sizeof(rectAOI));
 
     // Image memory allocation
     is_ClearSequence(hCam);
