@@ -17,7 +17,7 @@ CaptureUeye::CaptureUeye(VarList * _settings, int default_camera_id, QObject * p
     // Capture dimensions
     v_width = new VarInt("Width", 1280);
     _settings->addChild(v_width);
-    v_height = new VarInt("Width", 1024);
+    v_height = new VarInt("Height", 1024);
     _settings->addChild(v_height);
     v_x = new VarInt("X offset", 0);
     _settings->addChild(v_x);
