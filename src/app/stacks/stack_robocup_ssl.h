@@ -38,13 +38,10 @@
 #include "plugin_publishgeometry.h"
 #include "plugin_legacysslnetworkoutput.h"
 #include "plugin_legacypublishgeometry.h"
+#include "plugin_auto_color_calibration.h"
 #include "plugin_dvr.h"
 #include "cmpattern_teamdetector.h"
 #include "robocup_ssl_server.h"
-
-#ifdef OPENCV
-#include "plugin_neuralcolorcalib.h"
-#endif
 
 using namespace std;
 
@@ -62,6 +59,7 @@ class StackRoboCupSSL : public VisionStack {
   CameraParameters* camera_parameters;
   RoboCupField * global_field;
   PluginDetectBallsSettings * global_ball_settings;
+  CMPattern::TeamDetectorSettings * global_team_settings;
   CMPattern::TeamSelector * global_team_selector_blue;
   CMPattern::TeamSelector * global_team_selector_yellow;
   // UDP Server for Double-Sized field, new protobuf format.
@@ -76,6 +74,7 @@ class StackRoboCupSSL : public VisionStack {
                   PluginDetectBallsSettings* _global_ball_settings,
                   PluginPublishGeometry* _global_plugin_publish_geometry,
                   PluginLegacyPublishGeometry* _legacy_plugin_publish_geometry,
+                  CMPattern::TeamDetectorSettings* _global_team_settings,
                   CMPattern::TeamSelector* _global_team_selector_blue,
                   CMPattern::TeamSelector* _global_team_selector_yellow,
                   RoboCupSSLServer* ds_udp_server_new,
