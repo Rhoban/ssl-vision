@@ -80,8 +80,13 @@ RawImage CaptureUeye::getFrame()
 
     UEYEIMAGEINFO info;
     is_GetImageInfo(hCam, mem_id, &info, sizeof(UEYEIMAGEINFO));
-    result.setTime(info.u64TimestampDevice/10000000.0);
-    // printf("Time: %f\n", result.getTime());
+
+    timeval tv;
+    gettimeofday(&tv, 0);
+    img.setTime((double) tv.tv_sec + (tv.tv_usec / 1000000));
+
+// result.setTime(info.u64TimestampDevice/10000000.0);
+// //printf("Time: %f\n", result.getTime());
 
     return result;
 }
